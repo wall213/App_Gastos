@@ -1,12 +1,14 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useThemeColors } from '@/src/hooks/useThemeColors';
 
 interface TransactionItemProps {
   transaction: any;
 }
 
 export default function TransactionItem({ transaction }: TransactionItemProps) {
+  const colors = useThemeColors();
   const { name, category, time, account, amount, type, icon } = transaction;
 
   const renderIcon = () => {
@@ -34,19 +36,19 @@ export default function TransactionItem({ transaction }: TransactionItemProps) {
   return (
     <View style={styles.container}>
       <View style={styles.left}>
-        <View style={styles.iconWrapper}>
+        <View style={[styles.iconWrapper, { backgroundColor: colors.border }]}>
           {renderIcon()}
         </View>
         <View style={styles.info}>
-          <Text style={styles.name}>{name}</Text>
-          <Text style={styles.desc}>{category} • {time}</Text>
+          <Text style={[styles.name, { color: colors.text }]}>{name}</Text>
+          <Text style={[styles.desc, { color: colors.textSecondary }]}>{category} • {time}</Text>
         </View>
       </View>
       <View style={styles.right}>
-        <Text style={[styles.amount, isIncome ? styles.textGreen : styles.textPrimary]}>
+        <Text style={[styles.amount, { color: isIncome ? colors.positiveText : colors.text }]}>
           {formattedAmount}
         </Text>
-        <Text style={styles.account}>{account}</Text>
+        <Text style={[styles.account, { color: colors.textSecondary }]}>{account}</Text>
       </View>
     </View>
   );
@@ -68,7 +70,6 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: '#f5f6f8',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -78,12 +79,10 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#1e2022',
     marginBottom: 4,
   },
   desc: {
     fontSize: 12,
-    color: '#8c92a4',
   },
   right: {
     alignItems: 'flex-end',
@@ -94,15 +93,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 4,
   },
-  textGreen: {
-    color: '#1e8e3e',
-  },
-  textPrimary: {
-    color: '#1e2022',
-  },
   account: {
     fontSize: 10,
-    color: '#8c92a4',
     textTransform: 'uppercase',
     fontWeight: '600',
     letterSpacing: 0.5,

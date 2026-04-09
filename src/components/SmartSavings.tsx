@@ -1,19 +1,33 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useAppStore } from '@/src/store/useAppStore';
+import { useThemeColors } from '@/src/hooks/useThemeColors';
 
 export default function SmartSavings() {
+  const { theme } = useAppStore();
+  const colors = useThemeColors();
+
+  const isDark = theme === 'dark';
+
   return (
-    <View style={styles.cardBlue}>
+    <View style={[styles.cardBlue, { 
+      backgroundColor: isDark ? colors.cardBackground : colors.accent,
+      shadowColor: isDark ? colors.background : colors.accent
+    }]}>
       <View style={styles.iconContainer}>
-        <Ionicons name="trending-up" size={24} color="#ffffff" />
+        <Ionicons name={isDark ? 'bulb' : 'trending-up'} size={24} color={isDark ? colors.positive : '#ffffff'} />
       </View>
-      <Text style={styles.title}>Smart Savings</Text>
-      <Text style={styles.desc}>
-        You're on track to save 22% more than last month.
+      <Text style={[styles.title, { color: isDark ? colors.text : '#ffffff' }]}>
+        SMART SAVINGS
       </Text>
-      <TouchableOpacity style={styles.insightsBtn}>
-        <Text style={styles.insightsBtnText}>View insights</Text>
+      <Text style={[styles.desc, { color: isDark ? colors.textSecondary : 'rgba(255, 255, 255, 0.9)' }]}>
+        You could save <Text style={{ color: colors.positive, fontWeight: 'bold' }}>$420</Text> this month by optimizing recurring subscriptions in your <Text style={{ textDecorationLine: 'underline' }}>Personal</Text> category.
+      </Text>
+      <TouchableOpacity style={[styles.insightsBtn, { backgroundColor: colors.accentSecondary }]}>
+        <Text style={[styles.insightsBtnText, { color: isDark ? colors.textSecondary : colors.accent }]}>
+          Review Insights
+        </Text>
       </TouchableOpacity>
     </View>
   );

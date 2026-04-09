@@ -3,19 +3,19 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useThemeColors } from '@/src/hooks/useThemeColors';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const colors = useThemeColors();
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#3d5afe',
-        tabBarInactiveTintColor: '#8c92a4',
+        tabBarActiveTintColor: colors.tabIconSelected,
+        tabBarInactiveTintColor: colors.tabIconDefault,
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#ffffff',
+          backgroundColor: colors.tabBarBg,
           borderTopLeftRadius: 24,
           borderTopRightRadius: 24,
           height: 80,
@@ -37,35 +37,35 @@ export default function TabLayout() {
         }
       }}>
       <Tabs.Screen
-        name="index"
+        name='index'
         options={{
           title: 'DASHBOARD',
-          tabBarIcon: ({ color }) => <Ionicons size={24} name="grid" color={color} />,
+          tabBarIcon: ({ color }) => <Ionicons size={24} name='grid' color={color} />,
         }}
       />
       <Tabs.Screen
-        name="add"
+        name='add'
         options={{
           title: '',
           tabBarIcon: () => (
             <View style={styles.fabContainer}>
-              <View style={styles.fab}>
-                <Ionicons name="add" size={32} color="#ffffff" />
+              <View style={[styles.fab, { backgroundColor: colors.fabBg, borderColor: colors.background, shadowColor: colors.fabBg }]}>
+                <Ionicons name='add' size={32} color={colors.cardBackground} />
               </View>
             </View>
           ),
         }}
       />
       <Tabs.Screen
-        name="history"
+        name='history'
         options={{
           title: 'HISTORY',
-          tabBarIcon: ({ color }) => <Ionicons size={24} name="time" color={color} />,
+          tabBarIcon: ({ color }) => <Ionicons size={24} name='time' color={color} />,
         }}
       />
       
       {/* Escondiendo los tabs por default si quedaron sobrando */}
-      <Tabs.Screen name="explore" options={{ href: null }} />
+      <Tabs.Screen name='explore' options={{ href: null }} />
     </Tabs>
   );
 }
@@ -83,12 +83,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#3d5afe',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#3d5afe',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 8,
     borderWidth: 4,
-    borderColor: '#f7f8fa',
   }
 });

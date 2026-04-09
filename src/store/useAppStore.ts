@@ -25,6 +25,8 @@ interface AppState {
   growth: number;
   transactions: Transaction[];
   categories: Category[];
+  theme: 'light' | 'dark';
+  toggleTheme: () => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -40,4 +42,6 @@ export const useAppStore = create<AppState>((set) => ({
     { id: '2', name: 'Local', type: 'RENT & UTILITIES', amount: 2800.00, transactions: 2, icon: 'storefront' },
     { id: '3', name: 'Personal', type: 'LEISURE & HEALTH', amount: 890.25, transactions: 8, icon: 'person' },
   ],
+  theme: 'dark', // Starting with dark based on user liking the reference
+  toggleTheme: () => set((state) => ({ theme: state.theme === 'light' ? 'dark' : 'light' })),
 }));

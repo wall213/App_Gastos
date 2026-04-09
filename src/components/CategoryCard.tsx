@@ -1,16 +1,18 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useThemeColors } from '@/src/hooks/useThemeColors';
 
 interface CategoryCardProps {
   category: any;
 }
 
 export default function CategoryCard({ category }: CategoryCardProps) {
+  const colors = useThemeColors();
   const { name, type, amount, transactions, icon } = category;
 
   const renderIcon = () => {
-    return <Ionicons name={icon as any || 'fast-food'} size={24} color="#3d5afe" />;
+    return <Ionicons name={icon as any || 'fast-food'} size={24} color='#3d5afe' />;
   };
 
   const formattedAmount = new Intl.NumberFormat('en-US', {
@@ -19,16 +21,16 @@ export default function CategoryCard({ category }: CategoryCardProps) {
   }).format(amount);
 
   return (
-    <View style={styles.card}>
-      <View style={styles.iconWrapper}>
+    <View style={[styles.card, { backgroundColor: colors.border }]}>
+      <View style={[styles.iconWrapper, { backgroundColor: colors.cardBackground, shadowColor: colors.background }]}>
         {renderIcon()}
       </View>
       <View style={styles.info}>
-        <Text style={styles.name}>{name}</Text>
-        <Text style={styles.type}>{type}</Text>
+        <Text style={[styles.name, { color: colors.text }]}>{name}</Text>
+        <Text style={[styles.type, { color: colors.textSecondary }]}>{type}</Text>
         <View style={styles.bottom}>
-          <Text style={styles.amount}>{formattedAmount}</Text>
-          <Text style={styles.transactions}>{transactions} Transactions</Text>
+          <Text style={[styles.amount, { color: colors.text }]}>{formattedAmount}</Text>
+          <Text style={[styles.transactions, { color: colors.textSecondary }]}>{transactions} Transactions</Text>
         </View>
       </View>
     </View>
@@ -38,7 +40,6 @@ export default function CategoryCard({ category }: CategoryCardProps) {
 const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
-    backgroundColor: '#f5f6f8',
     borderRadius: 20,
     padding: 16,
     marginBottom: 12,
@@ -46,12 +47,10 @@ const styles = StyleSheet.create({
   iconWrapper: {
     width: 56,
     height: 56,
-    backgroundColor: '#ffffff',
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.02,
     shadowRadius: 4,
@@ -64,11 +63,9 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#1e2022',
   },
   type: {
     fontSize: 10,
-    color: '#8c92a4',
     marginTop: 2,
     letterSpacing: 0.5,
     textTransform: 'uppercase',
@@ -82,10 +79,8 @@ const styles = StyleSheet.create({
   amount: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1e2022',
   },
   transactions: {
     fontSize: 11,
-    color: '#8c92a4',
   },
 });

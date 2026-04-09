@@ -1,9 +1,12 @@
 import { View, Text, StyleSheet } from 'react-native';
+import { useThemeColors } from '@/src/hooks/useThemeColors';
 
 export default function HistoryScreen() {
+  const colors = useThemeColors();
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>History Screen</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.text, { color: colors.text }]}>History Screen</Text>
     </View>
   );
 }
@@ -13,7 +16,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f7f8fa',
   },
   text: {
     fontSize: 18,

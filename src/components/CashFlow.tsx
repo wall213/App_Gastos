@@ -1,22 +1,26 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
+import { useThemeColors } from '@/src/hooks/useThemeColors';
+
 export default function CashFlow() {
+  const colors = useThemeColors();
+
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: colors.cardBackground, shadowColor: colors.background }]}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.title}>Cash Flow</Text>
-          <Text style={styles.subtitle}>Monthly performance overview</Text>
+          <Text style={[styles.title, { color: colors.text }]}>Cash Flow</Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Monthly performance overview</Text>
         </View>
         <View style={styles.legend}>
-          <View style={styles.legendItem}>
-            <View style={[styles.dot, styles.incomeDot]} />
-            <Text style={styles.legendText}>INCOME</Text>
+          <View style={[styles.legendItem, { backgroundColor: colors.background }]}>
+            <View style={[styles.dot, styles.incomeDot, { backgroundColor: colors.accent }]} />
+            <Text style={[styles.legendText, { color: colors.textSecondary }]}>INCOME</Text>
           </View>
-          <View style={styles.legendItem}>
-            <View style={[styles.dot, styles.expenseDot]} />
-            <Text style={styles.legendText}>EXPENSES</Text>
+          <View style={[styles.legendItem, { backgroundColor: colors.background }]}>
+            <View style={[styles.dot, styles.expenseDot, { backgroundColor: colors.textSecondary }]} />
+            <Text style={[styles.legendText, { color: colors.textSecondary }]}>EXPENSES</Text>
           </View>
         </View>
       </View>
@@ -24,21 +28,21 @@ export default function CashFlow() {
       <View style={styles.chartArea}>
         {[40, 70, 20, 60, 80].map((height, i) => (
           <View key={i} style={styles.barGroup}>
-            <View style={styles.barBg}>
-              <View style={[styles.barFill, { height: `${height}%` }]} />
+            <View style={[styles.barBg, { backgroundColor: colors.chartBg }]}>
+              <View style={[styles.barFill, { height: `${height}%`, backgroundColor: colors.accent }]} />
             </View>
           </View>
         ))}
       </View>
 
       <View style={styles.totalsContainer}>
-        <View style={styles.totalBox}>
-          <Text style={styles.totalLabel}>TOTAL INCOME</Text>
-          <Text style={[styles.totalAmount, styles.incomeAmount]}>$12,400.00</Text>
+        <View style={[styles.totalBox, { backgroundColor: colors.background }]}>
+          <Text style={[styles.totalLabel, { color: colors.textSecondary }]}>TOTAL INCOME</Text>
+          <Text style={[styles.totalAmount, styles.incomeAmount, { color: colors.accent }]}>$12,400.00</Text>
         </View>
-        <View style={styles.totalBox}>
-          <Text style={styles.totalLabel}>TOTAL EXPENSES</Text>
-          <Text style={styles.totalAmount}>$4,120.00</Text>
+        <View style={[styles.totalBox, { backgroundColor: colors.background }]}>
+          <Text style={[styles.totalLabel, { color: colors.textSecondary }]}>TOTAL EXPENSES</Text>
+          <Text style={[styles.totalAmount, { color: colors.text }]}>$4,120.00</Text>
         </View>
       </View>
     </View>

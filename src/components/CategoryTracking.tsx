@@ -1,20 +1,22 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useAppStore } from '../store/useAppStore';
+import { useThemeColors } from '@/src/hooks/useThemeColors';
 import CategoryCard from './CategoryCard';
 
 export default function CategoryTracking() {
   const { categories } = useAppStore();
+  const colors = useThemeColors();
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.title}>Category Tracking</Text>
-          <Text style={styles.subtitle}>Quick access to frequent expense types</Text>
+          <Text style={[styles.title, { color: colors.text }]}>Category Tracking</Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Quick access to frequent expense types</Text>
         </View>
         <TouchableOpacity>
-          <Text style={styles.seeAll}>See All</Text>
+          <Text style={[styles.seeAll, { color: colors.accent }]}>See All</Text>
         </TouchableOpacity>
       </View>
 
@@ -41,15 +43,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1e2022',
   },
   subtitle: {
     fontSize: 12,
-    color: '#8c92a4',
     marginTop: 4,
   },
   seeAll: {
-    color: '#3d5afe',
     fontWeight: '600',
     fontSize: 14,
   },
