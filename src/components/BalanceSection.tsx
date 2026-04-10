@@ -5,7 +5,7 @@ import { useAppStore } from '../store/useAppStore';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
 
 export default function BalanceSection() {
-  const { balance, growth } = useAppStore();
+  const { balance } = useAppStore();
   const colors = useThemeColors();
 
   const formattedBalance = new Intl.NumberFormat('en-US', {
@@ -15,13 +15,9 @@ export default function BalanceSection() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.label, { color: colors.textSecondary }]}>TOTAL PORTFOLIO VALUE</Text>
+      <Text style={[styles.label, { color: colors.textSecondary }]}>BALANCE TOTAL</Text>
       <View style={styles.amountWrapper}>
         <Text style={[styles.amount, { color: colors.text }]}>{formattedBalance}</Text>
-        <View style={[styles.growthBadge, { backgroundColor: colors.growthBadgeBg }]}>
-          <Ionicons name='arrow-up' size={14} color={colors.positive} />
-          <Text style={[styles.growthText, { color: colors.positiveText }]}>{growth}%</Text>
-        </View>
       </View>
     </View>
   );
@@ -30,7 +26,7 @@ export default function BalanceSection() {
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 20,
-    paddingBottom: 24,
+    paddingBottom: 25,
   },
   label: {
     fontSize: 12,
@@ -48,17 +44,5 @@ const styles = StyleSheet.create({
     fontSize: 36,
     fontWeight: 'bold',
     letterSpacing: -1,
-  },
-  growthBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 16,
-    gap: 2,
-  },
-  growthText: {
-    fontSize: 12,
-    fontWeight: '600',
   },
 });
