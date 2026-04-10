@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { supabase } from '@/src/lib/supabase';
 import { useAuthStore } from '@/src/store/useAuthStore';
+import { ThemedAlert } from '@/src/components/ThemedAlert';
 
 export default function RootLayout() {
   const { setSession, session, initialized } = useAuthStore();
@@ -28,9 +29,9 @@ export default function RootLayout() {
 
     async function syncUserProfile(user: any) {
       try {
-        // Buscar el perfil en la tabla 'usuarios'
+        // Buscar el perfil en la tabla 'Usuarios'
         const { data: existingUser, error: fetchError } = await supabase
-          .from('usuarios')
+          .from('Usuarios')
           .select('*')
           .eq('idauth_supabase', user.id)
           .single();
@@ -43,7 +44,7 @@ export default function RootLayout() {
         if (!existingUser) {
           // Si no existe, crearlo con los metadatos de Google
           const { data: newUser, error: insertError } = await supabase
-            .from('usuarios')
+            .from('Usuarios')
             .insert({
               nombre: user.user_metadata?.full_name || 'Usuario',
               foto: user.user_metadata?.avatar_url || 'https://i.pravatar.cc/150',
@@ -95,9 +96,12 @@ export default function RootLayout() {
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="login" options={{ animation: 'fade' }} />
-      <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
-    </Stack>
+    <>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="login" options={{ animation: 'fade' }} />
+        <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
+      </Stack>
+      <ThemedAlert />
+    </>
   );
 }
