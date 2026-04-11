@@ -127,19 +127,27 @@ export default function AddTransactionScreen() {
     try {
       // g = gasto, i = ingreso
       const dbType = type === 'Expense' ? 'g' : 'i';
+      const numericAmount = parseFloat(amount);
 
       const { error } = await supabase
         .from('Transaccion')
         .insert({
           fecha: date.toISOString(),
-          cantidad: parseFloat(amount),
+          cantidad: numericAmount,
           categoria: selectedCategory,
           tipo: dbType,
           descripcion: description,
           iduser_supabase: user?.id,
         });
-
+        
       if (error) throw error;
+
+      const { profile, setProfile } = useAuthStore.getState();
+      if (profile) {
+        const currentBalance = profile.balance || 0;
+        const newBalance = dbType === 'i' ? currentBalance + numericAmount : currentBalance - numericAmount;
+        setProfile({ ...profile, balance: newBalance });
+      }
 
       showAlert({
         title: 'Éxito',

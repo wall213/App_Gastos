@@ -1,12 +1,14 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useAppStore } from '../store/useAppStore';
+import { useAuthStore } from '../store/useAuthStore';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
 
 export default function BalanceSection() {
-  const { balance } = useAppStore();
+  const { profile, profileLoaded } = useAuthStore();
   const colors = useThemeColors();
+
+  const balance = profile?.balance ?? 0;
+  const isNegative = balance < 0;
 
   const formattedBalance = new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -17,7 +19,13 @@ export default function BalanceSection() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Text style={[styles.label, { color: colors.textSecondary }]}>BALANCE TOTAL</Text>
       <View style={styles.amountWrapper}>
-        <Text style={[styles.amount, { color: colors.text }]}>{formattedBalance}</Text>
+        {profileLoaded ? (
+          <Text style={[styles.amount, { color: isNegative ? colors.negative : colors.text }]}>
+            {formattedBalance}
+          </Text>
+        ) : (
+          <View style={[styles.skeleton, { backgroundColor: colors.border }]} />
+        )}
       </View>
     </View>
   );
@@ -43,6 +51,12 @@ const styles = StyleSheet.create({
   amount: {
     fontSize: 36,
     fontWeight: 'bold',
-    letterSpacing: -1,
+    letterSpacing: 1,
+  },
+  skeleton: {
+    height: 36,
+    width: 180,
+    borderRadius: 8,
+    marginTop: 4,
   },
 });

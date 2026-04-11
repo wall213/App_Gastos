@@ -63,9 +63,6 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <Ionicons size={24} name='time' color={color} />,
         }}
       />
-      
-      {/* Escondiendo los tabs por default si quedaron sobrando */}
-      <Tabs.Screen name='explore' options={{ href: null }} />
     </Tabs>
   );
 }

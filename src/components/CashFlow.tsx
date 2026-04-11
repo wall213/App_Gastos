@@ -10,17 +10,17 @@ export default function CashFlow() {
     <View style={[styles.card, { backgroundColor: colors.cardBackground, shadowColor: colors.background }]}>
       <View style={styles.header}>
         <View>
-          <Text style={[styles.title, { color: colors.text }]}>Cash Flow</Text>
-          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Monthly performance overview</Text>
+          <Text style={[styles.title, { color: colors.text }]}>Flujo de Dinero</Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Resumen del rendimiento mensual</Text>
         </View>
         <View style={styles.legend}>
           <View style={[styles.legendItem, { backgroundColor: colors.background }]}>
             <View style={[styles.dot, styles.incomeDot, { backgroundColor: colors.accent }]} />
-            <Text style={[styles.legendText, { color: colors.textSecondary }]}>INCOME</Text>
+            <Text style={[styles.legendText, { color: colors.textSecondary }]}>INGRESOS</Text>
           </View>
           <View style={[styles.legendItem, { backgroundColor: colors.background }]}>
             <View style={[styles.dot, styles.expenseDot, { backgroundColor: colors.textSecondary }]} />
-            <Text style={[styles.legendText, { color: colors.textSecondary }]}>EXPENSES</Text>
+            <Text style={[styles.legendText, { color: colors.textSecondary }]}>GASTOS</Text>
           </View>
         </View>
       </View>
