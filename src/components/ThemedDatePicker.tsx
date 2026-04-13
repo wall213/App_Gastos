@@ -1,12 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
-  StyleSheet, 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  Modal, 
-  Dimensions,
-  ScrollView
+  StyleSheet, View, Text, TouchableOpacity, 
+  Modal, Dimensions, ScrollView
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeColors } from '@/src/hooks/useThemeColors';

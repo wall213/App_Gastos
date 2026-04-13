@@ -1,16 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  StyleSheet, 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  TextInput, 
-  ScrollView, 
-  Platform,
-  ActivityIndicator,
-  Alert,
-  Modal,
-  KeyboardAvoidingView
+  StyleSheet, View, Text, TouchableOpacity, TextInput, 
+  ScrollView, Platform, ActivityIndicator, Alert,
+  Modal, KeyboardAvoidingView
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -26,7 +18,6 @@ export default function AddTransactionScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
   const { showAlert } = useAlertStore();
-  
   const [amount, setAmount] = useState('');
   const [type, setType] = useState<'Expense' | 'Income'>('Expense');
   const [date, setDate] = useState(new Date());
@@ -142,11 +133,17 @@ export default function AddTransactionScreen() {
         
       if (error) throw error;
 
-      const { profile, setProfile } = useAuthStore.getState();
+      const { profile, setProfile, addTransactionToMonthlyFlow } = useAuthStore.getState();
       if (profile) {
         const currentBalance = profile.balance || 0;
         const newBalance = dbType === 'i' ? currentBalance + numericAmount : currentBalance - numericAmount;
         setProfile({ ...profile, balance: newBalance });
+      }
+
+      const now = new Date();
+      const isCurrentMonth = date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+      if (isCurrentMonth) {
+        addTransactionToMonthlyFlow(numericAmount, dbType);
       }
 
       showAlert({

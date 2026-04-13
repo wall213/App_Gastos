@@ -1,10 +1,60 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-
 import { useThemeColors } from '@/src/hooks/useThemeColors';
+import { supabase } from '@/src/lib/supabase';
+import { useAuthStore } from '../store/useAuthStore';
 
 export default function CashFlow() {
   const colors = useThemeColors();
+  const { user, monthlyIncome, monthlyExpense, monthlyTotalsLoaded, setMonthlyTotals } = useAuthStore();
+  
+  const [loading, setLoading] = useState(!monthlyTotalsLoaded);
+
+  useEffect(() => {
+    if (user && !monthlyTotalsLoaded) {
+      fetchMonthlyFlow();
+    }
+  }, [user, monthlyTotalsLoaded]);
+
+  const fetchMonthlyFlow = async () => {
+    try {
+      setLoading(true);
+      
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString();
+      const { data, error } = await supabase
+        .from('Transaccion')
+        .select('cantidad, tipo')
+        .eq('iduser_supabase', user?.id)
+        .gte('fecha', startOfMonth)
+        .lte('fecha', endOfMonth);
+
+      if (error) throw error;
+
+      if (data) {
+        const income = data
+          .filter(item => item.tipo === 'i')
+          .reduce((sum, item) => sum + (item.cantidad || 0), 0);
+        const expense = data
+          .filter(item => item.tipo === 'g')
+          .reduce((sum, item) => sum + (item.cantidad || 0), 0);
+
+        setMonthlyTotals(income, expense);
+      }
+    } catch (error) {
+      console.error('Error fetching cash flow:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(amount);
+  };
 
   return (
     <View style={[styles.card, { backgroundColor: colors.cardBackground, shadowColor: colors.background }]}>
@@ -37,12 +87,24 @@ export default function CashFlow() {
 
       <View style={styles.totalsContainer}>
         <View style={[styles.totalBox, { backgroundColor: colors.background }]}>
-          <Text style={[styles.totalLabel, { color: colors.textSecondary }]}>TOTAL INCOME</Text>
-          <Text style={[styles.totalAmount, styles.incomeAmount, { color: colors.accent }]}>$12,400.00</Text>
+          <Text style={[styles.totalLabel, { color: colors.textSecondary }]}>TOTAL INGRESOS</Text>
+          {loading ? (
+            <View style={[styles.skeleton, { backgroundColor: colors.border }]} />
+          ) : (
+            <Text style={[styles.totalAmount, styles.incomeAmount, { color: colors.accent }]}>
+              {formatCurrency(monthlyIncome)}
+            </Text>
+          )}
         </View>
         <View style={[styles.totalBox, { backgroundColor: colors.background }]}>
-          <Text style={[styles.totalLabel, { color: colors.textSecondary }]}>TOTAL EXPENSES</Text>
-          <Text style={[styles.totalAmount, { color: colors.text }]}>$4,120.00</Text>
+          <Text style={[styles.totalLabel, { color: colors.textSecondary }]}>TOTAL GASTOS</Text>
+          {loading ? (
+            <View style={[styles.skeleton, { backgroundColor: colors.border }]} />
+          ) : (
+            <Text style={[styles.totalAmount, { color: colors.text }]}>
+              {formatCurrency(monthlyExpense)}
+            </Text>
+          )}
         </View>
       </View>
     </View>
@@ -76,10 +138,10 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 12,
     color: '#8c92a4',
-    marginTop: 4,
+    marginTop: 10,
   },
   legend: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     gap: 8,
   },
   legendItem: {
@@ -157,5 +219,11 @@ const styles = StyleSheet.create({
   },
   incomeAmount: {
     color: '#3d5afe',
+  },
+  skeleton: {
+    height: 20,
+    width: '100%',
+    borderRadius: 4,
+    backgroundColor: '#e1e1e1',
   },
 });

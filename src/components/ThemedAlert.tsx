@@ -1,12 +1,7 @@
 import React from 'react';
 import { 
-  StyleSheet, 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  Modal, 
-  Animated, 
-  Dimensions 
+  StyleSheet, View, Text, TouchableOpacity, 
+  Modal, Animated, Dimensions 
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAlertStore } from '@/src/store/useAlertStore';
