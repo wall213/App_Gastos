@@ -9,34 +9,32 @@ interface TransactionItemProps {
 
 export default function TransactionItem({ transaction }: TransactionItemProps) {
   const colors = useThemeColors();
-  const { name, category, time, account, amount, type, icon } = transaction;
+  const { name, category, time, amount, type, icon } = transaction;
 
   const isIncome = type === 'i';
-  const iconColor = isIncome ? (colors.positiveText || '#1e8e3e') : (colors.negative || '#ff4444');
-
-  const renderIcon = () => {
-    return <Ionicons name={(icon as any) || 'pricetag'} size={20} color={iconColor} />;
-  };
-
-
+  
+  // Custom colors for the ledger style
+  const amountColor = isIncome ? '#4ADE80' : '#F87171'; // Vibrant green/red
   const formattedAmount = `${isIncome ? '+' : '-'}$${Math.abs(amount).toFixed(2)}`;
 
   return (
     <View style={styles.container}>
       <View style={styles.left}>
-        <View style={[styles.iconWrapper, { backgroundColor: colors.border }]}>
-          {renderIcon()}
+        <View style={[styles.iconCircle, { backgroundColor: '#1E293B' }]}>
+          <Ionicons name={(icon as any) || 'pricetag'} size={18} color="#94A3B8" />
         </View>
         <View style={styles.info}>
           <Text style={[styles.name, { color: colors.text }]}>{name}</Text>
-          <Text style={[styles.desc, { color: colors.textSecondary }]}>{category} • {time}</Text>
+          <Text style={[styles.desc, { color: colors.textSecondary }]}>{time}</Text>
         </View>
       </View>
       <View style={styles.right}>
-        <Text style={[styles.amount, { color: isIncome ? (colors.positiveText || '#1e8e3e') : (colors.negative || '#ff4444') }]}>
+        <Text style={[styles.amount, { color: amountColor }]}>
           {formattedAmount}
         </Text>
-        <Text style={[styles.account, { color: colors.textSecondary }]}>{account}</Text>
+        <Text style={[styles.categoryTag, { color: colors.textSecondary }]}>
+          {category?.toUpperCase() || 'GENERAL'}
+        </Text>
       </View>
     </View>
   );
@@ -47,17 +45,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 14,
   },
   left: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 14,
   },
-  iconWrapper: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
+  iconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20, // Circular as in "Recent Ledger Items"
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -65,12 +63,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   name: {
-    fontSize: 15,
-    fontWeight: '600',
-    marginBottom: 4,
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 2,
   },
   desc: {
     fontSize: 12,
+    opacity: 0.6,
   },
   right: {
     alignItems: 'flex-end',
@@ -78,13 +77,12 @@ const styles = StyleSheet.create({
   },
   amount: {
     fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 4,
+    fontWeight: '800',
+    marginBottom: 2,
   },
-  account: {
+  categoryTag: {
     fontSize: 10,
-    textTransform: 'uppercase',
-    fontWeight: '600',
+    fontWeight: '900',
     letterSpacing: 0.5,
   },
 });

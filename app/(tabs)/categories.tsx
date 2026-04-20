@@ -76,7 +76,6 @@ export default function CategoriesScreen() {
     if (!editingCat) return;
     setLoadingAction(true);
     try {
-      // 1. Eliminar primero todas las transacciones vinculadas a esta categoría
       const { error: txError } = await supabase
         .from('Transaccion')
         .delete()
@@ -84,8 +83,7 @@ export default function CategoriesScreen() {
         .eq('categoria', editingCat.name);
 
       if (txError) throw txError;
-
-      // 2. Ahora eliminar la categoría propiamente
+      
       const { error } = await supabase.from('Categoria').delete().eq('id', parseInt(editingCat.id));
       if (error) throw error;
       queryClient.invalidateQueries();
