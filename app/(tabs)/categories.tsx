@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Modal, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
 import CategoryCard from '@/src/components/CategoryCard';
 import IconPicker from '@/src/components/IconPicker';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useAuthStore } from '@/src/store/useAuthStore';
 import { supabase } from '@/src/lib/supabase';
 
@@ -25,15 +25,18 @@ export default function CategoriesScreen() {
   const [loading, setLoading] = useState(true);
 
   const [editModalVisible, setEditModalVisible] = useState(false);
+  const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
   const [editingCat, setEditingCat] = useState<AggregatedCategory | null>(null);
   const [editName, setEditName] = useState('');
   const [editIcon, setEditIcon] = useState('pricetag');
 
-  useEffect(() => {
-    if (user) {
-      fetchData();
-    }
-  }, [user]);
+  useFocusEffect(
+    useCallback(() => {
+      if (user) {
+        fetchData();
+      }
+    }, [user])
+  );
 
   const fetchData = async () => {
     setLoading(true);
@@ -77,33 +80,29 @@ export default function CategoriesScreen() {
     }
   };
 
-  const handleLongPress = (cat: AggregatedCategory) => {
-    Alert.alert(
-      "Opciones",
-      `¿Qué deseas hacer con '${cat.name}'?`,
-      [
-        { text: "Editar", onPress: () => openEditModal(cat) },
-        { text: "Eliminar", onPress: () => confirmDelete(cat), style: "destructive" },
-        { text: "Cancelar", style: "cancel" }
-      ]
-    );
+
+  const confirmDelete = () => {
+    setDeleteConfirmVisible(true);
   };
 
-  const confirmDelete = (cat: AggregatedCategory) => {
-    Alert.alert("Confirmar", `¿Eliminar la categoría '${cat.name}' permanentemente?`, [
-      { text: "Cancelar", style: "cancel" },
-      { text: "Eliminar", style: "destructive", onPress: () => deleteCategory(cat) }
-    ]);
-  };
-
-  const deleteCategory = async (cat: AggregatedCategory) => {
+  const deleteCategory = async () => {
+    if (!editingCat) return;
     setLoading(true);
     try {
-      const { error } = await supabase.from('Categoria').delete().eq('id', parseInt(cat.id));
-      if (error) throw error;
-      fetchData(); // Refrescar lista
-    } catch (error) {
+      const { error } = await supabase.from('Categoria').delete().eq('id', parseInt(editingCat.id));
+      if (error) {
+         if (error.code === '23503') {
+            throw new Error("No puedes eliminar una categoría que tiene transacciones registradas. Elimínalas o reasígnalas primero.");
+         }
+         throw error;
+      }
+      setDeleteConfirmVisible(false);
+      setEditModalVisible(false);
+      fetchData(); 
+    } catch (error: any) {
       console.error(error);
+      setDeleteConfirmVisible(false);
+      Alert.alert("Ups!", error.message || "No se pudo eliminar la categoría.");
       setLoading(false);
     }
   };
@@ -166,7 +165,7 @@ export default function CategoriesScreen() {
                 key={cat.id} 
                 activeOpacity={0.8}
                 onPress={() => router.push(`/category/${cat.id}` as any)}
-                onLongPress={() => handleLongPress(cat)}
+                onLongPress={() => openEditModal(cat)}
               >
                 <CategoryCard category={cat} />
               </TouchableOpacity>
@@ -180,7 +179,6 @@ export default function CategoriesScreen() {
         <View style={{ height: 100 }} />
       </ScrollView>
 
-      {/* Modal de Edición/Creación */}
       <Modal visible={editModalVisible} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: colors.cardBackground }]}>
@@ -200,16 +198,45 @@ export default function CategoriesScreen() {
             <IconPicker selectedIcon={editIcon} onSelectIcon={setEditIcon} />
 
             <View style={styles.modalActions}>
-              <TouchableOpacity onPress={() => setEditModalVisible(false)} style={styles.modalBtn}>
+              {editingCat ? (
+                <TouchableOpacity onPress={confirmDelete} style={[styles.modalBtn, { paddingHorizontal: 0 }]}>
+                  <Text style={[styles.modalBtnText, { color: colors.negative || '#ff4444' }]}>Eliminar</Text>
+                </TouchableOpacity>
+              ) : <View />}
+              
+              <View style={{ flexDirection: 'row', gap: 12 }}>
+                <TouchableOpacity onPress={() => setEditModalVisible(false)} style={styles.modalBtn}>
+                  <Text style={[styles.modalBtnText, { color: colors.textSecondary }]}>Cancelar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={saveCategory} style={[styles.modalBtn, { backgroundColor: colors.accent }]}>
+                  <Text style={[styles.modalBtnText, { color: '#fff' }]}>Guardar</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal de Confirmación de Eliminación */}
+      <Modal visible={deleteConfirmVisible} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: colors.cardBackground }]}>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>Confirmar Eliminación</Text>
+            <Text style={{ color: colors.textSecondary, textAlign: 'center', marginBottom: 24, fontSize: 16 }}>
+              ¿Estás seguro de eliminar la categoría '{editingCat?.name}'? Esta acción no se puede deshacer.
+            </Text>
+            <View style={[styles.modalActions, { justifyContent: 'center', gap: 16 }]}>
+              <TouchableOpacity onPress={() => setDeleteConfirmVisible(false)} style={styles.modalBtn}>
                 <Text style={[styles.modalBtnText, { color: colors.textSecondary }]}>Cancelar</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={saveCategory} style={[styles.modalBtn, { backgroundColor: colors.accent }]}>
-                <Text style={[styles.modalBtnText, { color: '#fff' }]}>Guardar</Text>
+              <TouchableOpacity onPress={deleteCategory} style={[styles.modalBtn, { backgroundColor: colors.negative || '#ff4444' }]}>
+                <Text style={[styles.modalBtnText, { color: '#fff' }]}>Eliminar</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
       </Modal>
+
     </SafeAreaView>
   );
 }
@@ -286,8 +313,9 @@ const styles = StyleSheet.create({
   },
   modalActions: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 12,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 10,
   },
   modalBtn: {
     paddingVertical: 10,
