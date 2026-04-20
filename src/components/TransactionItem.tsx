@@ -11,26 +11,14 @@ export default function TransactionItem({ transaction }: TransactionItemProps) {
   const colors = useThemeColors();
   const { name, category, time, account, amount, type, icon } = transaction;
 
+  const isIncome = type === 'i';
+  const iconColor = isIncome ? (colors.positiveText || '#1e8e3e') : (colors.negative || '#ff4444');
+
   const renderIcon = () => {
-    // Basic mapping of string icons to Ionicons
-    let iconName: any = 'bag-handle';
-    let iconColor = '#3d5afe';
-
-    if (icon === 'file-text') {
-      iconName = 'document-text';
-      iconColor = '#1e8e3e';
-    } else if (icon === 'fastfood') {
-      iconName = 'fast-food';
-      iconColor = '#d32f2f';
-    } else if (icon === 'shopping-bag') {
-      iconName = 'bag-handle';
-      iconColor = '#3d5afe';
-    }
-
-    return <Ionicons name={iconName} size={20} color={iconColor} />;
+    return <Ionicons name={(icon as any) || 'pricetag'} size={20} color={iconColor} />;
   };
 
-  const isIncome = type === 'income';
+
   const formattedAmount = `${isIncome ? '+' : '-'}$${Math.abs(amount).toFixed(2)}`;
 
   return (
@@ -45,7 +33,7 @@ export default function TransactionItem({ transaction }: TransactionItemProps) {
         </View>
       </View>
       <View style={styles.right}>
-        <Text style={[styles.amount, { color: isIncome ? colors.positiveText : colors.text }]}>
+        <Text style={[styles.amount, { color: isIncome ? (colors.positiveText || '#1e8e3e') : (colors.negative || '#ff4444') }]}>
           {formattedAmount}
         </Text>
         <Text style={[styles.account, { color: colors.textSecondary }]}>{account}</Text>

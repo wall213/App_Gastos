@@ -1,28 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
 import { supabase } from '@/src/lib/supabase';
 import { useAuthStore } from '../store/useAuthStore';
+import { useQuery } from '@tanstack/react-query';
 
 export default function CashFlow() {
   const colors = useThemeColors();
-  const { user, monthlyIncome, monthlyExpense, monthlyTotalsLoaded, setMonthlyTotals } = useAuthStore();
+  const { user } = useAuthStore();
   
-  const [loading, setLoading] = useState(!monthlyTotalsLoaded);
-
-  useEffect(() => {
-    if (user && !monthlyTotalsLoaded) {
-      fetchMonthlyFlow();
-    }
-  }, [user, monthlyTotalsLoaded]);
-
-  const fetchMonthlyFlow = async () => {
-    try {
-      setLoading(true);
-      
+  const { data: totals, isLoading: loading } = useQuery({
+    queryKey: ['cashFlow', user?.id],
+    queryFn: async () => {
       const now = new Date();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
       const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString();
+      
       const { data, error } = await supabase
         .from('Transaccion')
         .select('cantidad, tipo')
@@ -32,22 +25,19 @@ export default function CashFlow() {
 
       if (error) throw error;
 
+      let income = 0;
+      let expense = 0;
       if (data) {
-        const income = data
-          .filter(item => item.tipo === 'i')
-          .reduce((sum, item) => sum + (item.cantidad || 0), 0);
-        const expense = data
-          .filter(item => item.tipo === 'g')
-          .reduce((sum, item) => sum + (item.cantidad || 0), 0);
-
-        setMonthlyTotals(income, expense);
+        income = data.filter(item => item.tipo === 'i').reduce((sum, item) => sum + (item.cantidad || 0), 0);
+        expense = data.filter(item => item.tipo === 'g').reduce((sum, item) => sum + (item.cantidad || 0), 0);
       }
-    } catch (error) {
-      console.error('Error fetching cash flow:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return { income, expense };
+    },
+    enabled: !!user,
+  });
+
+  const monthlyIncome = totals?.income || 0;
+  const monthlyExpense = totals?.expense || 0;
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {

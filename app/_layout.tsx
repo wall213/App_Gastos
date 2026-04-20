@@ -3,6 +3,16 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import { supabase } from '@/src/lib/supabase';
 import { useAuthStore } from '@/src/store/useAuthStore';
 import { ThemedAlert } from '@/src/components/ThemedAlert';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes cache
+      refetchOnWindowFocus: true,
+    },
+  },
+});
 
 export default function RootLayout() {
   const { setSession, session, initialized } = useAuthStore();
@@ -96,12 +106,14 @@ export default function RootLayout() {
   }
 
   return (
-    <>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="login" options={{ animation: 'fade' }} />
-        <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
-      </Stack>
-      <ThemedAlert />
-    </>
+    <QueryClientProvider client={queryClient}>
+      <>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="login" options={{ animation: 'fade' }} />
+          <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
+        </Stack>
+        <ThemedAlert />
+      </>
+    </QueryClientProvider>
   );
 }

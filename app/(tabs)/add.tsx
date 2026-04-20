@@ -8,6 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/src/lib/supabase';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/src/store/useAuthStore';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
 import { ThemedDatePicker } from '@/src/components/ThemedDatePicker';
@@ -17,6 +18,7 @@ import IconPicker from '@/src/components/IconPicker';
 export default function AddTransactionScreen() {
   const colors = useThemeColors();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { user } = useAuthStore();
   const { showAlert } = useAlertStore();
   const [amount, setAmount] = useState('');
@@ -83,6 +85,8 @@ export default function AddTransactionScreen() {
 
       if (error) throw error;
 
+      queryClient.invalidateQueries(); // Forzar refetch global
+      
       // Actualizar lista y cerrar modal
       setCategories([...categories, data]);
       setSelectedCategory(data.nombre);
@@ -149,6 +153,8 @@ export default function AddTransactionScreen() {
       if (isCurrentMonth) {
         addTransactionToMonthlyFlow(numericAmount, dbType);
       }
+
+      queryClient.invalidateQueries(); // Forzar refetch en todo el app al guardar transacción
 
       showAlert({
         title: 'Éxito',

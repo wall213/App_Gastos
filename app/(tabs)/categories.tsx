@@ -4,9 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
 import CategoryCard from '@/src/components/CategoryCard';
 import IconPicker from '@/src/components/IconPicker';
-import { useRouter, useFocusEffect } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/src/store/useAuthStore';
 import { supabase } from '@/src/lib/supabase';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 interface AggregatedCategory {
   id: string;
@@ -21,26 +22,18 @@ export default function CategoriesScreen() {
   const colors = useThemeColors();
   const { user } = useAuthStore();
   const router = useRouter();
-  const [categories, setCategories] = useState<AggregatedCategory[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
   const [editingCat, setEditingCat] = useState<AggregatedCategory | null>(null);
   const [editName, setEditName] = useState('');
   const [editIcon, setEditIcon] = useState('pricetag');
+  const [loadingAction, setLoadingAction] = useState(false);
 
-  useFocusEffect(
-    useCallback(() => {
-      if (user) {
-        fetchData();
-      }
-    }, [user])
-  );
-
-  const fetchData = async () => {
-    setLoading(true);
-    try {
+  const { data: categories = [], isLoading: loading } = useQuery({
+    queryKey: ['categories', user?.id],
+    queryFn: async () => {
       const [catsRes, txsRes] = await Promise.all([
         supabase.from('Categoria').select('*').eq('idauth_supabase', user?.id),
         supabase.from('Transaccion').select('cantidad, categoria, tipo').eq('iduser_supabase', user?.id)
@@ -52,7 +45,7 @@ export default function CategoriesScreen() {
       const cats = catsRes.data || [];
       const txs = txsRes.data || [];
 
-      const aggregated: AggregatedCategory[] = cats.map(cat => {
+      return cats.map(cat => {
         const catTxs = txs.filter(tx => tx.categoria === cat.nombre);
         
         let totalAmount = 0;
@@ -65,21 +58,15 @@ export default function CategoriesScreen() {
         return {
           id: cat.id.toString(),
           name: cat.nombre,
-          type: '', // Campo vacio para ocultar subtítulo
+          type: '', 
           amount: totalAmount,
           transactions: catTxs.length,
           icon: cat.icono || 'pricetag',
         };
       });
-
-      setCategories(aggregated);
-    } catch (error) {
-      console.error("Error fetching categories data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+    },
+    enabled: !!user,
+  });
 
   const confirmDelete = () => {
     setDeleteConfirmVisible(true);
@@ -87,23 +74,28 @@ export default function CategoriesScreen() {
 
   const deleteCategory = async () => {
     if (!editingCat) return;
-    setLoading(true);
+    setLoadingAction(true);
     try {
+      // 1. Eliminar primero todas las transacciones vinculadas a esta categoría
+      const { error: txError } = await supabase
+        .from('Transaccion')
+        .delete()
+        .eq('iduser_supabase', user?.id)
+        .eq('categoria', editingCat.name);
+
+      if (txError) throw txError;
+
+      // 2. Ahora eliminar la categoría propiamente
       const { error } = await supabase.from('Categoria').delete().eq('id', parseInt(editingCat.id));
-      if (error) {
-         if (error.code === '23503') {
-            throw new Error("No puedes eliminar una categoría que tiene transacciones registradas. Elimínalas o reasígnalas primero.");
-         }
-         throw error;
-      }
+      if (error) throw error;
+      queryClient.invalidateQueries();
       setDeleteConfirmVisible(false);
       setEditModalVisible(false);
-      fetchData(); 
     } catch (error: any) {
       console.error(error);
-      setDeleteConfirmVisible(false);
       Alert.alert("Ups!", error.message || "No se pudo eliminar la categoría.");
-      setLoading(false);
+    } finally {
+      setLoadingAction(false);
     }
   };
 
@@ -124,7 +116,7 @@ export default function CategoriesScreen() {
   const saveCategory = async () => {
     if (!editName.trim()) return;
     setEditModalVisible(false);
-    setLoading(true);
+    setLoadingAction(true);
     try {
       if (editingCat) {
         const { error } = await supabase.from('Categoria').update({ nombre: editName.trim(), icono: editIcon }).eq('id', parseInt(editingCat.id));
@@ -133,10 +125,11 @@ export default function CategoriesScreen() {
         const { error } = await supabase.from('Categoria').insert({ nombre: editName.trim(), icono: editIcon, idauth_supabase: user?.id });
         if (error) throw error;
       }
-      fetchData();
+      queryClient.invalidateQueries();
     } catch (error) {
       console.error(error);
-      setLoading(false);
+    } finally {
+      setLoadingAction(false);
     }
   };
 
