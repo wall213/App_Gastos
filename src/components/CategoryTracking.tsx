@@ -12,11 +12,11 @@ export default function CategoryTracking() {
     <View style={styles.container}>
       <View style={styles.header}>
         <View>
-          <Text style={[styles.title, { color: colors.text }]}>Category Tracking</Text>
-          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Quick access to frequent expense types</Text>
+          <Text style={[styles.title, { color: colors.text }]}>Categorias</Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Acceso rapido a categorias</Text>
         </View>
         <TouchableOpacity>
-          <Text style={[styles.seeAll, { color: colors.accent }]}>See All</Text>
+          <Text style={[styles.seeAll, { color: colors.accent }]}>Ver Todo</Text>
         </TouchableOpacity>
       </View>
 
