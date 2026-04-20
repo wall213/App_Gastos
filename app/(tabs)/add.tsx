@@ -12,6 +12,7 @@ import { useAuthStore } from '@/src/store/useAuthStore';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
 import { ThemedDatePicker } from '@/src/components/ThemedDatePicker';
 import { useAlertStore } from '@/src/store/useAlertStore';
+import IconPicker from '@/src/components/IconPicker';
 
 export default function AddTransactionScreen() {
   const colors = useThemeColors();
@@ -31,6 +32,7 @@ export default function AddTransactionScreen() {
   // Estados para nueva categoría
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryIcon, setNewCategoryIcon] = useState('pricetag');
   const [savingCategory, setSavingCategory] = useState(false);
 
   useEffect(() => {
@@ -73,6 +75,7 @@ export default function AddTransactionScreen() {
         .from('Categoria')
         .insert({
           nombre: newCategoryName.trim(),
+          icono: newCategoryIcon,
           idauth_supabase: user?.id
         })
         .select()
@@ -84,6 +87,7 @@ export default function AddTransactionScreen() {
       setCategories([...categories, data]);
       setSelectedCategory(data.nombre);
       setNewCategoryName('');
+      setNewCategoryIcon('pricetag');
       setShowAddCategory(false);
     } catch (error: any) {
       showAlert({
@@ -336,11 +340,16 @@ export default function AddTransactionScreen() {
               onChangeText={setNewCategoryName}
               autoFocus
             />
+            
+            <Text style={[styles.sectionTitle, { color: colors.textSecondary, marginBottom: 8 }]}>SELECCIONA UN ICONO</Text>
+            <IconPicker selectedIcon={newCategoryIcon} onSelectIcon={setNewCategoryIcon} />
+
             <View style={styles.modalActions}>
               <TouchableOpacity 
                 onPress={() => {
                   setShowAddCategory(false);
                   setNewCategoryName('');
+                  setNewCategoryIcon('pricetag');
                 }}
                 style={styles.modalBtn}
               >
