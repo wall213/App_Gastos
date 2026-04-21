@@ -8,19 +8,21 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes cache
+      staleTime: 1000 * 60 * 5,
       refetchOnWindowFocus: true,
     },
   },
 });
 
+import { useThemeColors } from '@/src/hooks/useThemeColors';
+
 export default function RootLayout() {
   const { setSession, session, initialized } = useAuthStore();
+  const colors = useThemeColors();
   const segments = useSegments();
   const router = useRouter();
 
   useEffect(() => {
-    // Escuchar cambios en la autenticación
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session) syncUserProfile(session.user);
@@ -38,8 +40,9 @@ export default function RootLayout() {
     );
 
     async function syncUserProfile(user: any) {
+      if (!user) return;
       try {
-        // Buscar el perfil en la tabla 'Usuarios'
+        console.log('Sincronizando perfil para:', user.id);
         const { data: existingUser, error: fetchError } = await supabase
           .from('Usuarios')
           .select('*')
@@ -52,7 +55,6 @@ export default function RootLayout() {
         }
 
         if (!existingUser) {
-          // Si no existe, crearlo con los metadatos de Google
           const { data: newUser, error: insertError } = await supabase
             .from('Usuarios')
             .insert({
@@ -72,11 +74,10 @@ export default function RootLayout() {
             useAuthStore.getState().setProfile(newUser);
           }
         } else {
-          // Si existe, actualizar el store
           useAuthStore.getState().setProfile(existingUser);
         }
       } catch (error: any) {
-        console.error('Sync error:', error.message);
+        console.error('Sync error:', error.message || error);
       }
     }
 
@@ -86,31 +87,31 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    // Solo redirigir si el estado de auth ya fue inicializado
     if (!initialized) return;
 
-    const inAuthGroup = segments[0] === '(tabs)';
+    const inAuthGroup = segments[0] === '(tabs)' || segments[0] === 'category';
     
     if (!session && inAuthGroup) {
-      // Si no hay sesión y el usuario intenta entrar a los tabs, redirigir a login
       router.replace('/login' as any);
-    } else if (session && !inAuthGroup) {
-      // Si hay sesión y el usuario está fuera de los tabs (ej. en login), redirigir a los tabs
+    } else if (session && segments[0] === 'login') {
       router.replace('/(tabs)' as any);
     }
   }, [session, segments, initialized]);
 
   if (!initialized) {
-    // Podrías poner un componente de Splash aquí
     return null;
   }
 
   return (
     <QueryClientProvider client={queryClient}>
       <>
-        <Stack screenOptions={{ headerShown: false }}>
+        <Stack screenOptions={{ 
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.background } // Fix white flash
+        }}>
           <Stack.Screen name="login" options={{ animation: 'fade' }} />
           <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
+          <Stack.Screen name="category/[id]" options={{ animation: 'slide_from_right' }} />
         </Stack>
         <ThemedAlert />
       </>

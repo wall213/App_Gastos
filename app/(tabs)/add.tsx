@@ -6,7 +6,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '@/src/lib/supabase';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/src/store/useAuthStore';
@@ -18,6 +18,7 @@ import IconPicker from '@/src/components/IconPicker';
 export default function AddTransactionScreen() {
   const colors = useThemeColors();
   const router = useRouter();
+  const params = useLocalSearchParams();
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
   const { showAlert } = useAlertStore();
@@ -26,7 +27,9 @@ export default function AddTransactionScreen() {
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [description, setDescription] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(
+    (params.category as string) || null
+  );
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [fetchingCategories, setFetchingCategories] = useState(true);
@@ -51,6 +54,8 @@ export default function AddTransactionScreen() {
       
       if (error) throw error;
       setCategories(data || []);
+      
+      // Si no hay categoría seleccionada aún (por param), seleccionar la primera
       if (data && data.length > 0 && !selectedCategory) {
         setSelectedCategory(data[0].nombre);
       }

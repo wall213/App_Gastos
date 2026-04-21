@@ -1,13 +1,13 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { TouchableOpacity, View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
 
 interface TransactionItemProps {
   transaction: any;
+  onLongPress?: () => void;
 }
 
-export default function TransactionItem({ transaction }: TransactionItemProps) {
+export default function TransactionItem({ transaction, onLongPress }: TransactionItemProps) {
   const colors = useThemeColors();
   const { name, category, time, amount, type, icon } = transaction;
 
@@ -18,7 +18,12 @@ export default function TransactionItem({ transaction }: TransactionItemProps) {
   const formattedAmount = `${isIncome ? '+' : '-'}$${Math.abs(amount).toFixed(2)}`;
 
   return (
-    <View style={styles.container}>
+    <TouchableOpacity 
+      style={styles.container} 
+      onLongPress={onLongPress}
+      activeOpacity={0.7}
+      delayLongPress={500}
+    >
       <View style={styles.left}>
         <View style={[styles.iconCircle, { backgroundColor: '#1E293B' }]}>
           <Ionicons name={(icon as any) || 'pricetag'} size={18} color="#94A3B8" />
@@ -36,7 +41,7 @@ export default function TransactionItem({ transaction }: TransactionItemProps) {
           {category?.toUpperCase() || 'GENERAL'}
         </Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
