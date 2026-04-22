@@ -33,7 +33,7 @@ export default function CategoriesScreen() {
   const [loadingAction, setLoadingAction] = useState(false);
 
   const { data: categories = [], isLoading: loading } = useQuery({
-    queryKey: ['categories', user?.id],
+    queryKey: ['categories', 'stats', user?.id],
     queryFn: async () => {
       const [catsRes, txsRes] = await Promise.all([
         supabase.from('Categoria').select('*').eq('idauth_supabase', user?.id),
@@ -99,7 +99,10 @@ export default function CategoriesScreen() {
       
       const { error } = await supabase.from('Categoria').delete().eq('id', parseInt(editingCat.id));
       if (error) throw error;
-      queryClient.invalidateQueries();
+      await Promise.all([
+        queryClient.resetQueries({ queryKey: ['categories'] }),
+        queryClient.resetQueries({ queryKey: ['transactions'] })
+      ]);
       setEditModalVisible(false);
     } catch (error: any) {
       console.error(error);
@@ -139,7 +142,7 @@ export default function CategoriesScreen() {
         const { error } = await supabase.from('Categoria').insert({ nombre: editName.trim(), icono: editIcon, idauth_supabase: user?.id });
         if (error) throw error;
       }
-      queryClient.invalidateQueries();
+      queryClient.resetQueries({ queryKey: ['categories'] });
     } catch (error) {
       console.error(error);
     } finally {

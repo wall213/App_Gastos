@@ -21,7 +21,7 @@ export default function CategoryDetailScreen() {
   const { deleteTransaction } = useTransactions();
 
   const { data: detailData, isLoading, isError } = useQuery({
-    queryKey: ['categoryDetail', id, user?.id],
+    queryKey: ['transactions', 'categoryDetail', id, user?.id],
     queryFn: async () => {
       const categoryId = typeof id === 'string' ? parseInt(id) : id;
       

@@ -31,7 +31,7 @@ export default function RecentActivity() {
   };
 
   const { data: transactions = [], isLoading: loading } = useQuery({
-    queryKey: ['recentActivity', user?.id],
+    queryKey: ['transactions', 'recentActivity', user?.id],
     queryFn: async () => {
       const [txsRes, catsRes] = await Promise.all([
         supabase.from('Transaccion').select('*').eq('iduser_supabase', user?.id).order('fecha', { ascending: false }).limit(5),

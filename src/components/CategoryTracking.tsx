@@ -22,7 +22,7 @@ export default function CategoryTracking() {
   const { user } = useAuthStore();
 
   const { data: categories = [], isLoading: loading } = useQuery({
-    queryKey: ['categoryTracking', user?.id],
+    queryKey: ['categories', 'tracking', user?.id],
     queryFn: async () => {
       const [catsRes, txsRes] = await Promise.all([
         supabase.from('Categoria').select('*').eq('idauth_supabase', user?.id),
