@@ -1,5 +1,9 @@
+import { View } from 'react-native';
 import { useEffect } from 'react';
+import * as SystemUI from 'expo-system-ui';
 import { Stack, useRouter, useSegments } from 'expo-router';
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { useAppStore } from '@/src/store/useAppStore';
 import { supabase } from '@/src/lib/supabase';
 import { useAuthStore } from '@/src/store/useAuthStore';
 import { ThemedAlert } from '@/src/components/ThemedAlert';
@@ -96,24 +100,44 @@ export default function RootLayout() {
       router.replace('/(tabs)' as any);
     }
   }, [session, segments, initialized]);
+  
+  const theme = useAppStore((state) => state.theme);
+
+  // Sync native root background color with theme to prevent flashes
+  useEffect(() => {
+    SystemUI.setBackgroundColorAsync(colors.background);
+  }, [theme, colors.background]);
+
+  const navigationTheme = theme === 'dark' ? DarkTheme : DefaultTheme;
+  const customTheme = {
+    ...navigationTheme,
+    colors: {
+      ...navigationTheme.colors,
+      background: colors.background,
+      card: colors.cardBackground,
+      text: colors.text,
+      border: colors.border,
+      primary: colors.accent,
+    },
+  };
 
   if (!initialized) {
-    return null;
+    return <View style={{ flex: 1, backgroundColor: colors.background }} />;
   }
 
   return (
     <QueryClientProvider client={queryClient}>
-      <>
+      <ThemeProvider value={customTheme}>
         <Stack screenOptions={{ 
           headerShown: false,
-          contentStyle: { backgroundColor: colors.background } // Fix white flash
+          contentStyle: { backgroundColor: colors.background } 
         }}>
           <Stack.Screen name="login" options={{ animation: 'fade' }} />
           <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
           <Stack.Screen name="category/[id]" options={{ animation: 'slide_from_right' }} />
         </Stack>
         <ThemedAlert />
-      </>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
