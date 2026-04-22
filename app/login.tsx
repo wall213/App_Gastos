@@ -1,12 +1,7 @@
 import React, { useState } from 'react';
 import { 
-  StyleSheet, 
-  View, 
-  Text, 
-  TouchableOpacity,  
-  StatusBar,
-  Dimensions,
-  ActivityIndicator
+  StyleSheet, View, Text, TouchableOpacity,  
+  StatusBar, Dimensions, ActivityIndicator
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';

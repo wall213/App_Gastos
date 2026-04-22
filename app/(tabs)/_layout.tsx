@@ -2,7 +2,6 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '@/constants/theme';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
 
 export default function TabLayout() {
@@ -39,7 +38,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name='index'
         options={{
-          title: 'DASHBOARD',
+          title: 'INICIO',
           tabBarIcon: ({ color }) => <Ionicons size={24} name='grid' color={color} />,
         }}
       />
@@ -57,15 +56,12 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name='history'
+        name='categories'
         options={{
-          title: 'HISTORY',
-          tabBarIcon: ({ color }) => <Ionicons size={24} name='time' color={color} />,
+          title: 'CATEGORIAS',
+          tabBarIcon: ({ color }) => <Ionicons size={24} name='list' color={color} />,
         }}
       />
-      
-      {/* Escondiendo los tabs por default si quedaron sobrando */}
-      <Tabs.Screen name='explore' options={{ href: null }} />
     </Tabs>
   );
 }

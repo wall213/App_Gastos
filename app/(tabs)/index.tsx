@@ -1,7 +1,6 @@
 import React from 'react';
 import { ScrollView, StyleSheet, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
 import { useThemeColors } from '@/src/hooks/useThemeColors';
 import Header from '@/src/components/Header';
 import BalanceSection from '@/src/components/BalanceSection';

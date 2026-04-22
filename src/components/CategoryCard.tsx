@@ -27,10 +27,10 @@ export default function CategoryCard({ category }: CategoryCardProps) {
       </View>
       <View style={styles.info}>
         <Text style={[styles.name, { color: colors.text }]}>{name}</Text>
-        <Text style={[styles.type, { color: colors.textSecondary }]}>{type}</Text>
+        {!!type && <Text style={[styles.type, { color: colors.textSecondary }]}>{type}</Text>}
         <View style={styles.bottom}>
-          <Text style={[styles.amount, { color: colors.text }]}>{formattedAmount}</Text>
-          <Text style={[styles.transactions, { color: colors.textSecondary }]}>{transactions} Transactions</Text>
+          <Text style={[styles.amount, { color: amount < 0 ? colors.negative : colors.text }]}>{formattedAmount}</Text>
+          <Text style={[styles.transactions, { color: colors.textSecondary }]}>{transactions} Movimientos</Text>
         </View>
       </View>
     </View>

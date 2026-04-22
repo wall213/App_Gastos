@@ -6,9 +6,15 @@ interface AuthState {
   user: User | null;
   profile: any | null;
   initialized: boolean;
+  profileLoaded: boolean;
+  monthlyIncome: number;
+  monthlyExpense: number;
+  monthlyTotalsLoaded: boolean;
   setSession: (session: Session | null) => void;
   setProfile: (profile: any | null) => void;
   setInitialized: (initialized: boolean) => void;
+  setMonthlyTotals: (income: number, expense: number) => void;
+  addTransactionToMonthlyFlow: (amount: number, type: 'i' | 'g') => void;
   signOut: () => void;
 }
 
@@ -17,6 +23,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   profile: null,
   initialized: false,
+  profileLoaded: false,
+  monthlyIncome: 0,
+  monthlyExpense: 0,
+  monthlyTotalsLoaded: false,
   setSession: (session) => {
     const user = session?.user ?? null;
     const metadataProfile = user ? {
@@ -29,10 +39,28 @@ export const useAuthStore = create<AuthState>((set) => ({
       session, 
       user,
       profile: metadataProfile, // Perfil "preview" inmediato
-      initialized: true 
+      initialized: true,
+      profileLoaded: false // Reset until DB fetch completes
     });
   },
-  setProfile: (profile) => set({ profile }),
+  setProfile: (profile) => set({ profile, profileLoaded: !!profile }),
   setInitialized: (initialized) => set({ initialized }),
-  signOut: () => set({ session: null, user: null, profile: null }),
+  setMonthlyTotals: (income, expense) => set({ 
+    monthlyIncome: income, 
+    monthlyExpense: expense, 
+    monthlyTotalsLoaded: true 
+  }),
+  addTransactionToMonthlyFlow: (amount, type) => set((state) => ({
+    monthlyIncome: type === 'i' ? state.monthlyIncome + amount : state.monthlyIncome,
+    monthlyExpense: type === 'g' ? state.monthlyExpense + amount : state.monthlyExpense,
+  })),
+  signOut: () => set({ 
+    session: null, 
+    user: null, 
+    profile: null, 
+    profileLoaded: false,
+    monthlyIncome: 0,
+    monthlyExpense: 0,
+    monthlyTotalsLoaded: false
+  }),
 }));

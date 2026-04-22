@@ -1,38 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  StyleSheet, 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  TextInput, 
-  ScrollView, 
-  Platform,
-  ActivityIndicator,
-  Alert,
-  Modal,
-  KeyboardAvoidingView
+  StyleSheet, View, Text, TouchableOpacity, TextInput, 
+  ScrollView, Platform, ActivityIndicator, Alert,
+  Modal, KeyboardAvoidingView
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '@/src/lib/supabase';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/src/store/useAuthStore';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
 import { ThemedDatePicker } from '@/src/components/ThemedDatePicker';
 import { useAlertStore } from '@/src/store/useAlertStore';
+import IconPicker from '@/src/components/IconPicker';
 
 export default function AddTransactionScreen() {
   const colors = useThemeColors();
   const router = useRouter();
+  const params = useLocalSearchParams();
+  const queryClient = useQueryClient();
   const { user } = useAuthStore();
   const { showAlert } = useAlertStore();
-  
   const [amount, setAmount] = useState('');
   const [type, setType] = useState<'Expense' | 'Income'>('Expense');
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [description, setDescription] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(
+    (params.category as string) || null
+  );
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [fetchingCategories, setFetchingCategories] = useState(true);
@@ -40,6 +37,7 @@ export default function AddTransactionScreen() {
   // Estados para nueva categoría
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryIcon, setNewCategoryIcon] = useState('pricetag');
   const [savingCategory, setSavingCategory] = useState(false);
 
   useEffect(() => {
@@ -56,6 +54,8 @@ export default function AddTransactionScreen() {
       
       if (error) throw error;
       setCategories(data || []);
+      
+      // Si no hay categoría seleccionada aún (por param), seleccionar la primera
       if (data && data.length > 0 && !selectedCategory) {
         setSelectedCategory(data[0].nombre);
       }
@@ -82,6 +82,7 @@ export default function AddTransactionScreen() {
         .from('Categoria')
         .insert({
           nombre: newCategoryName.trim(),
+          icono: newCategoryIcon,
           idauth_supabase: user?.id
         })
         .select()
@@ -89,10 +90,13 @@ export default function AddTransactionScreen() {
 
       if (error) throw error;
 
+      queryClient.invalidateQueries(); // Forzar refetch global
+      
       // Actualizar lista y cerrar modal
       setCategories([...categories, data]);
       setSelectedCategory(data.nombre);
       setNewCategoryName('');
+      setNewCategoryIcon('pricetag');
       setShowAddCategory(false);
     } catch (error: any) {
       showAlert({
@@ -127,19 +131,35 @@ export default function AddTransactionScreen() {
     try {
       // g = gasto, i = ingreso
       const dbType = type === 'Expense' ? 'g' : 'i';
+      const numericAmount = parseFloat(amount);
 
       const { error } = await supabase
         .from('Transaccion')
         .insert({
           fecha: date.toISOString(),
-          cantidad: parseFloat(amount),
+          cantidad: numericAmount,
           categoria: selectedCategory,
           tipo: dbType,
           descripcion: description,
           iduser_supabase: user?.id,
         });
-
+        
       if (error) throw error;
+
+      const { profile, setProfile, addTransactionToMonthlyFlow } = useAuthStore.getState();
+      if (profile) {
+        const currentBalance = profile.balance || 0;
+        const newBalance = dbType === 'i' ? currentBalance + numericAmount : currentBalance - numericAmount;
+        setProfile({ ...profile, balance: newBalance });
+      }
+
+      const now = new Date();
+      const isCurrentMonth = date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+      if (isCurrentMonth) {
+        addTransactionToMonthlyFlow(numericAmount, dbType);
+      }
+
+      queryClient.invalidateQueries(); // Forzar refetch en todo el app al guardar transacción
 
       showAlert({
         title: 'Éxito',
@@ -331,11 +351,16 @@ export default function AddTransactionScreen() {
               onChangeText={setNewCategoryName}
               autoFocus
             />
+            
+            <Text style={[styles.sectionTitle, { color: colors.textSecondary, marginBottom: 8 }]}>SELECCIONA UN ICONO</Text>
+            <IconPicker selectedIcon={newCategoryIcon} onSelectIcon={setNewCategoryIcon} />
+
             <View style={styles.modalActions}>
               <TouchableOpacity 
                 onPress={() => {
                   setShowAddCategory(false);
                   setNewCategoryName('');
+                  setNewCategoryIcon('pricetag');
                 }}
                 style={styles.modalBtn}
               >
