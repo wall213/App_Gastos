@@ -99,11 +99,11 @@ export default function CategoriesScreen() {
       
       const { error } = await supabase.from('Categoria').delete().eq('id', parseInt(editingCat.id));
       if (error) throw error;
+      setEditModalVisible(false);
       await Promise.all([
         queryClient.resetQueries({ queryKey: ['categories'] }),
         queryClient.resetQueries({ queryKey: ['transactions'] })
       ]);
-      setEditModalVisible(false);
     } catch (error: any) {
       console.error(error);
       showAlert({
