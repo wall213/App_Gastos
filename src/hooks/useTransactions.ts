@@ -23,6 +23,8 @@ export function useTransactions() {
       queryClient.invalidateQueries({ queryKey: ['totalBalance'] });
       queryClient.invalidateQueries({ queryKey: ['categories'] });
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['recentActivity'] });
+      queryClient.invalidateQueries({ queryKey: ['categoryTracking'] });
       
       showAlert({
         title: 'Éxito',

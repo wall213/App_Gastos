@@ -13,8 +13,6 @@ export default function TransactionItem({ transaction, onLongPress }: Transactio
 
   const isIncome = type === 'i';
   
-  // Custom colors for the ledger style
-  // Custom colors for the ledger style
   const amountColor = isIncome ? colors.positiveText : colors.negative;
   const formattedAmount = `${isIncome ? '+' : '-'}$${Math.abs(amount).toFixed(2)}`;
 

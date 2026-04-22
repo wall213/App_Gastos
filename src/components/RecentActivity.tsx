@@ -5,10 +5,30 @@ import TransactionItem from './TransactionItem';
 import { useAuthStore } from '../store/useAuthStore';
 import { supabase } from '@/src/lib/supabase';
 import { useQuery } from '@tanstack/react-query';
+import { useTransactions } from '../hooks/useTransactions';
+import { useAlertStore } from '../store/useAlertStore';
 
 export default function RecentActivity() {
   const colors = useThemeColors();
   const { user } = useAuthStore();
+  const { deleteTransaction } = useTransactions();
+  const { showAlert } = useAlertStore();
+
+  const handleDelete = (id: number, name: string) => {
+    showAlert({
+      title: 'Eliminar Movimiento',
+      message: `¿Estás seguro de que quieres eliminar "${name}"?`,
+      type: 'warning',
+      buttons: [
+        { text: 'Cancelar', style: 'cancel' },
+        { 
+          text: 'Eliminar', 
+          style: 'destructive',
+          onPress: () => deleteTransaction.mutate(id)
+        }
+      ]
+    });
+  };
 
   const { data: transactions = [], isLoading: loading } = useQuery({
     queryKey: ['recentActivity', user?.id],
@@ -53,7 +73,10 @@ export default function RecentActivity() {
         ) : transactions.length > 0 ? (
           transactions.map((tx, index) => (
             <View key={tx.id?.toString()}>
-              <TransactionItem transaction={tx} />
+              <TransactionItem 
+                transaction={tx} 
+                onLongPress={() => handleDelete(tx.id, tx.name)} 
+              />
               {index < transactions.length - 1 && <View style={[styles.divider, { backgroundColor: colors.border }]} />}
             </View>
           ))
