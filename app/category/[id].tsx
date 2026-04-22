@@ -9,6 +9,7 @@ import { useAuthStore } from '@/src/store/useAuthStore';
 import { supabase } from '@/src/lib/supabase';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAlertStore } from '@/src/store/useAlertStore';
+import { useTransactions } from '@/src/hooks/useTransactions';
 
 export default function CategoryDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -17,6 +18,7 @@ export default function CategoryDetailScreen() {
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
   const { showAlert } = useAlertStore();
+  const { deleteTransaction } = useTransactions();
 
   const { data: detailData, isLoading, isError } = useQuery({
     queryKey: ['categoryDetail', id, user?.id],
@@ -86,7 +88,6 @@ export default function CategoryDetailScreen() {
     enabled: !!user && !!id,
     staleTime: 0,
   });
-
   const handleDeleteTransaction = (txId: number) => {
     showAlert({
       title: 'Eliminar movimiento',
@@ -97,29 +98,12 @@ export default function CategoryDetailScreen() {
         { 
           text: 'Eliminar', 
           style: 'destructive',
-          onPress: async () => {
-            try {
-              const { error } = await supabase.from('Transaccion').delete().eq('id', txId);
-              if (error) throw error;
-              
-              // Invalidar consultas para refrescar balance y lista
-              queryClient.invalidateQueries({ queryKey: ['categoryDetail'] });
-              queryClient.invalidateQueries({ queryKey: ['cashFlow'] });
-              queryClient.invalidateQueries({ queryKey: ['totalBalance'] });
-              
-              // Actualizar perfil localmente si fuera necesario (opcional ya que invalidateQueries lo hará eventualmente)
-            } catch (err: any) {
-              showAlert({
-                title: 'Error',
-                message: 'No se pudo eliminar el movimiento',
-                type: 'error'
-              });
-            }
-          }
+          onPress: () => deleteTransaction.mutate(txId)
         }
       ]
     });
   };
+
 
   if (isLoading) {
     return (

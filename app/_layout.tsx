@@ -42,7 +42,6 @@ export default function RootLayout() {
     async function syncUserProfile(user: any) {
       if (!user) return;
       try {
-        console.log('Sincronizando perfil para:', user.id);
         const { data: existingUser, error: fetchError } = await supabase
           .from('Usuarios')
           .select('*')

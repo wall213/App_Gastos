@@ -14,7 +14,8 @@ export default function TransactionItem({ transaction, onLongPress }: Transactio
   const isIncome = type === 'i';
   
   // Custom colors for the ledger style
-  const amountColor = isIncome ? '#4ADE80' : '#F87171'; // Vibrant green/red
+  // Custom colors for the ledger style
+  const amountColor = isIncome ? colors.positiveText : colors.negative;
   const formattedAmount = `${isIncome ? '+' : '-'}$${Math.abs(amount).toFixed(2)}`;
 
   return (
@@ -25,8 +26,8 @@ export default function TransactionItem({ transaction, onLongPress }: Transactio
       delayLongPress={500}
     >
       <View style={styles.left}>
-        <View style={[styles.iconCircle, { backgroundColor: '#1E293B' }]}>
-          <Ionicons name={(icon as any) || 'pricetag'} size={18} color="#94A3B8" />
+        <View style={[styles.iconCircle, { backgroundColor: colors.accentSecondary }]}>
+          <Ionicons name={(icon as any) || 'pricetag'} size={18} color={colors.textSecondary} />
         </View>
         <View style={styles.info}>
           <Text style={[styles.name, { color: colors.text }]}>{name}</Text>

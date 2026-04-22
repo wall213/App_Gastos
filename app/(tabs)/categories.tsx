@@ -8,6 +8,7 @@ import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/src/store/useAuthStore';
 import { supabase } from '@/src/lib/supabase';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useAlertStore } from '@/src/store/useAlertStore';
 
 interface AggregatedCategory {
   id: string;
@@ -25,7 +26,7 @@ export default function CategoriesScreen() {
   const queryClient = useQueryClient();
 
   const [editModalVisible, setEditModalVisible] = useState(false);
-  const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
+  const { showAlert } = useAlertStore();
   const [editingCat, setEditingCat] = useState<AggregatedCategory | null>(null);
   const [editName, setEditName] = useState('');
   const [editIcon, setEditIcon] = useState('pricetag');
@@ -69,7 +70,19 @@ export default function CategoriesScreen() {
   });
 
   const confirmDelete = () => {
-    setDeleteConfirmVisible(true);
+    showAlert({
+      title: 'Confirmar Eliminación',
+      message: `¿Estás seguro de eliminar la categoría '${editingCat?.name}'? Esta acción no se puede deshacer.`,
+      type: 'warning',
+      buttons: [
+        { text: 'Cancelar', style: 'cancel' },
+        { 
+          text: 'Eliminar', 
+          style: 'destructive',
+          onPress: deleteCategory
+        }
+      ]
+    });
   };
 
   const deleteCategory = async () => {
@@ -87,11 +100,14 @@ export default function CategoriesScreen() {
       const { error } = await supabase.from('Categoria').delete().eq('id', parseInt(editingCat.id));
       if (error) throw error;
       queryClient.invalidateQueries();
-      setDeleteConfirmVisible(false);
       setEditModalVisible(false);
     } catch (error: any) {
       console.error(error);
-      Alert.alert("Ups!", error.message || "No se pudo eliminar la categoría.");
+      showAlert({
+        title: 'Error',
+        message: error.message || "No se pudo eliminar la categoría.",
+        type: 'error'
+      });
     } finally {
       setLoadingAction(false);
     }
@@ -203,26 +219,6 @@ export default function CategoriesScreen() {
                   <Text style={[styles.modalBtnText, { color: '#fff' }]}>Guardar</Text>
                 </TouchableOpacity>
               </View>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Modal de Confirmación de Eliminación */}
-      <Modal visible={deleteConfirmVisible} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: colors.cardBackground }]}>
-            <Text style={[styles.modalTitle, { color: colors.text }]}>Confirmar Eliminación</Text>
-            <Text style={{ color: colors.textSecondary, textAlign: 'center', marginBottom: 24, fontSize: 16 }}>
-              ¿Estás seguro de eliminar la categoría '{editingCat?.name}'? Esta acción no se puede deshacer.
-            </Text>
-            <View style={[styles.modalActions, { justifyContent: 'center', gap: 16 }]}>
-              <TouchableOpacity onPress={() => setDeleteConfirmVisible(false)} style={styles.modalBtn}>
-                <Text style={[styles.modalBtnText, { color: colors.textSecondary }]}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={deleteCategory} style={[styles.modalBtn, { backgroundColor: colors.negative || '#ff4444' }]}>
-                <Text style={[styles.modalBtnText, { color: '#fff' }]}>Eliminar</Text>
-              </TouchableOpacity>
             </View>
           </View>
         </View>
