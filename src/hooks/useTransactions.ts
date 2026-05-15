@@ -17,12 +17,12 @@ export function useTransactions() {
       return id;
     },
     onSuccess: () => {
-      // Invalidate all related queries to ensure consistency across screens
+      // Reset root keys to force immediate refetch and clear cache
+      queryClient.resetQueries({ queryKey: ['transactions'] });
+      queryClient.resetQueries({ queryKey: ['categories'] });
       queryClient.invalidateQueries({ queryKey: ['categoryDetail'] });
       queryClient.invalidateQueries({ queryKey: ['cashFlow'] });
       queryClient.invalidateQueries({ queryKey: ['totalBalance'] });
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
-      queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['recentActivity'] });
       queryClient.invalidateQueries({ queryKey: ['categoryTracking'] });
       

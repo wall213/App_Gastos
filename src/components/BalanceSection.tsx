@@ -10,7 +10,7 @@ export default function BalanceSection() {
   const colors = useThemeColors();
 
   const { data: balance = 0, isLoading: loading } = useQuery({
-    queryKey: ['totalBalance', user?.id],
+    queryKey: ['transactions', 'totalBalance', user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('Transaccion')

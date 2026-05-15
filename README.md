@@ -1,50 +1,82 @@
-# Welcome to your Expo app 👋
+# Gastos App — Gestor Financiero
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+[![React Native](https://img.shields.io/badge/React_Native-0.81.5-61DAFB?logo=react&logoColor=white)](https://reactnative.dev/)
+[![Expo](https://img.shields.io/badge/Expo-54.0-000020?logo=expo&logoColor=white)](https://expo.dev/)
+[![Supabase](https://img.shields.io/badge/Supabase-Database-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Zustand](https://img.shields.io/badge/Zustand-State_Management-orange)](https://github.com/pmndrs/zustand)
 
-## Get started
+Una aplicación premium y moderna de seguimiento de gastos financieros construida con **React Native** y **Expo**. Gestiona tu presupuesto, rastrea categorías y visualiza tu flujo de caja con facilidad.
 
-1. Install dependencies
+---
 
+## Características
+
+- **Dashboard Premium**: Resumen de tu saldo, ingresos mensuales y gastos.
+- **Visualización de Flujo de Caja**: Gráficos dinámicos para entender tus patrones de gasto.
+- **Seguimiento por Categorías**: Organiza tus gastos en categorías personalizadas.
+- **Actividad Reciente**: Acceso rápido a tus últimas transacciones.
+- **Autenticación Segura**: Flujos de inicio de sesión y autenticación integrados.
+- **Modo Oscuro**: Estética oscura elegante diseñada para una mejor experiencia de usuario.
+
+---
+
+## Stack Tecnológico
+
+- **Framework**: [Expo](https://expo.dev/) (React Native)
+- **Base de Datos y Auth**: [Supabase](https://supabase.com/)
+- **Gestión de Estado**: [Zustand](https://github.com/pmndrs/zustand)
+- **Peticiones de Datos**: [React Query](https://tanstack.com/query/latest)
+- **Navegación**: [Expo Router](https://docs.expo.dev/router/introduction/) (Basado en archivos)
+- **Animaciones**: [React Native Reanimated](https://docs.swmansion.com/react-native-reanimated/)
+
+---
+
+## Comienzo
+
+### Requisitos Previos
+
+- [Node.js](https://nodejs.org/)
+- [Expo Go](https://expo.dev/go) en tu dispositivo móvil O Emulador de Android/iOS
+
+### Instalación
+
+1. **Clona el repositorio**
+   ```bash
+   git clone https://github.com/tu-usuario/App_Gastos_RN.git
+   ```
+
+2. **Instala las dependencias**
    ```bash
    npm install
    ```
 
-2. Start the app
+3. **Configura las variables de entorno**
+   Crea un archivo `.env` en el directorio raíz y añade tus credenciales de Supabase:
+   ```env
+   EXPO_PUBLIC_SUPABASE_URL=tu_supabase_url
+   EXPO_PUBLIC_SUPABASE_ANON_KEY=tu_supabase_anon_key
+   ```
 
+4. **Inicia el servidor de desarrollo**
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+---
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Estructura del Proyecto
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```text
+├── app/               # Páginas de Expo Router (tabs, auth, etc.)
+├── components/        # Componentes de UI reutilizables
+├── constants/         # Constantes de la app (Colores, Tipografía)
+├── hooks/             # Hooks de React personalizados
+├── src/               # Lógica central de la aplicación
+│   ├── components/    # Componentes específicos de funciones
+│   └── hooks/         # Hooks específicos de funciones
+└── assets/            # Activos estáticos (imágenes, fuentes)
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+---
+Hecho con ❤️ por Aldo Garcia

@@ -21,7 +21,7 @@ export default function LoginScreen() {
   const signInWithGoogle = async () => {
     setLoading(true);
     try {
-      const redirectUrl = Linking.createURL('/'); // Usamos la raíz para que el layout maneje el redirect
+      const redirectUrl = Linking.createURL('auth/callback'); 
       console.log('Redirect URL:', redirectUrl);
 
       const { data, error } = await supabase.auth.signInWithOAuth({

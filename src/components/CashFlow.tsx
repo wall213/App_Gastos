@@ -10,7 +10,7 @@ export default function CashFlow() {
   const { user } = useAuthStore();
   
   const { data: totals, isLoading: loading } = useQuery({
-    queryKey: ['cashFlow', user?.id],
+    queryKey: ['transactions', 'cashFlow', user?.id],
     queryFn: async () => {
       const now = new Date();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();

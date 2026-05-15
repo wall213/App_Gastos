@@ -8,7 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '@/src/lib/supabase';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/src/store/useAuthStore';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
 import { ThemedDatePicker } from '@/src/components/ThemedDatePicker';
@@ -23,48 +23,52 @@ export default function AddTransactionScreen() {
   const { user } = useAuthStore();
   const { showAlert } = useAlertStore();
   const [amount, setAmount] = useState('');
-  const [type, setType] = useState<'Expense' | 'Income'>('Expense');
+  const [type, setType] = useState<'Expense' | 'Income'>('Income');
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [description, setDescription] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(
     (params.category as string) || null
   );
-  const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [fetchingCategories, setFetchingCategories] = useState(true);
-
-  // Estados para nueva categoría
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryIcon, setNewCategoryIcon] = useState('pricetag');
   const [savingCategory, setSavingCategory] = useState(false);
 
-  useEffect(() => {
-    fetchCategories();
-  }, [user]);
-
-  const fetchCategories = async () => {
-    if (!user) return;
-    try {
+  const { data: categories = [], isLoading: fetchingCategories } = useQuery({
+    queryKey: ['categories', 'list', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
       const { data, error } = await supabase
         .from('Categoria')
         .select('*')
         .eq('idauth_supabase', user.id);
       
       if (error) throw error;
-      setCategories(data || []);
+      return data || [];
+    },
+    enabled: !!user,
+  });
+
+  // Efecto para validar la categoría seleccionada contra la lista real
+  useEffect(() => {
+    if (fetchingCategories) return;
+
+    if (categories.length > 0) {
+      // Verificar si la categoría seleccionada aún existe
+      const exists = categories.find(cat => cat.nombre === selectedCategory);
       
-      // Si no hay categoría seleccionada aún (por param), seleccionar la primera
-      if (data && data.length > 0 && !selectedCategory) {
-        setSelectedCategory(data[0].nombre);
+      if (!selectedCategory || !exists) {
+        // Si no hay seleccionada o la que había se borró, tomamos la primera
+        setSelectedCategory(categories[0].nombre);
       }
-    } catch (error: any) {
-      console.error('Error fetching categories:', error.message);
-    } finally {
-      setFetchingCategories(false);
+    } else {
+      // Si no hay ninguna categoría en la base de datos
+      setSelectedCategory(null);
     }
-  };
+  }, [categories, selectedCategory, fetchingCategories]);
+
 
   const handleAddCategory = async () => {
     if (!newCategoryName.trim()) {
@@ -90,10 +94,9 @@ export default function AddTransactionScreen() {
 
       if (error) throw error;
 
-      queryClient.invalidateQueries(); // Forzar refetch global
+      queryClient.invalidateQueries({ queryKey: ['categories'] }); // Forzar refetch global de todo lo relacionado a categorías
       
       // Actualizar lista y cerrar modal
-      setCategories([...categories, data]);
       setSelectedCategory(data.nombre);
       setNewCategoryName('');
       setNewCategoryIcon('pricetag');
@@ -118,10 +121,30 @@ export default function AddTransactionScreen() {
       });
       return;
     }
+    if (categories.length === 0) {
+      showAlert({
+        title: 'Sin Categorías',
+        message: 'Debes crear al menos una categoría antes de guardar una transacción.',
+        type: 'warning'
+      });
+      return;
+    }
+
     if (!selectedCategory) {
       showAlert({
         title: 'Error',
         message: 'Por favor seleccione una categoría',
+        type: 'error'
+      });
+      return;
+    }
+
+    // Verificar doblemente que la categoría seleccionada existe en el array actual
+    const categoryExists = categories.some(c => c.nombre === selectedCategory);
+    if (!categoryExists) {
+      showAlert({
+        title: 'Error',
+        message: 'La categoría seleccionada ya no existe. Por favor elige otra.',
         type: 'error'
       });
       return;
@@ -146,20 +169,11 @@ export default function AddTransactionScreen() {
         
       if (error) throw error;
 
-      const { profile, setProfile, addTransactionToMonthlyFlow } = useAuthStore.getState();
-      if (profile) {
-        const currentBalance = profile.balance || 0;
-        const newBalance = dbType === 'i' ? currentBalance + numericAmount : currentBalance - numericAmount;
-        setProfile({ ...profile, balance: newBalance });
-      }
-
-      const now = new Date();
-      const isCurrentMonth = date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
-      if (isCurrentMonth) {
-        addTransactionToMonthlyFlow(numericAmount, dbType);
-      }
-
-      queryClient.invalidateQueries(); // Forzar refetch en todo el app al guardar transacción
+      // Resetear consultas de forma raíz para forzar refetch inmediato y limpiar caché
+      await Promise.all([
+        queryClient.resetQueries({ queryKey: ['transactions'] }),
+        queryClient.resetQueries({ queryKey: ['categories'] })
+      ]);
 
       showAlert({
         title: 'Éxito',
@@ -216,20 +230,20 @@ export default function AddTransactionScreen() {
           <TouchableOpacity 
             style={[
               styles.toggleBtn, 
-              type === 'Expense' && [styles.toggleBtnActiveExpense]
-            ]}
-            onPress={() => setType('Expense')}
-          >
-            <Text style={[styles.toggleText, { color: type === 'Expense' ? '#FF4444' : colors.textSecondary }]}>Gasto</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[
-              styles.toggleBtn, 
               type === 'Income' && [styles.toggleBtnActiveIncome]
             ]}
             onPress={() => setType('Income')}
           >
             <Text style={[styles.toggleText, { color: type === 'Income' ? '#1E8E3E' : colors.textSecondary }]}>Ingreso</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[
+              styles.toggleBtn, 
+              type === 'Expense' && [styles.toggleBtnActiveExpense]
+            ]}
+            onPress={() => setType('Expense')}
+          >
+            <Text style={[styles.toggleText, { color: type === 'Expense' ? '#FF4444' : colors.textSecondary }]}>Gasto</Text>
           </TouchableOpacity>
         </View>
 
